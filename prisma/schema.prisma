@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int   @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  email     String   @unique
+  name      String?
+  skills    SkillUser[]  // Множество SkillUser для связи между User и Skill
+  about     String?
+  age       Int?
+  avatar    String?
+  password  String
+  experience Experience[]
+}
+
+model Experience {
+  id        Int   @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    Int
+  title     String
+  company   String
+  startDate String
+  endDate   String?
+  description String?
+  location  String?
+  current   Boolean @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Skill {
+  id        Int   @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     SkillUser[]  // Множество SkillUser для связи между Skill и User
+}
+
+model SkillUser {
+  id        Int   @id @default(autoincrement())
+  skillId   Int
+  userId    Int
+  rating    Int    // Оценка от 1 до 10
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Обратное поле связи в модели Skill, которое указывает на SkillUser
+  skill   Skill   @relation(fields: [skillId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([skillId, userId])  // Уникальная связь между Skill и User
+}
+
+model Vacancy {
+  id        Int   @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title     String
+  company   String
+  location  String?
+  salary    Int?
+  description String?
+
+  // Обратное поле связи в модели Employer
+  employer  Employer @relation(fields: [employerId], references: [id])
+  employerId Int
+}
+
+model Employer {
+  id        Int   @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email     String   @unique
+  name      String?
+  about     String?
+  avatar    String?
+  password  String
+  company   String
+  location  String?
+  website   String?
+  responses Int?
+  phone     String?
+
+  // Обратное поле связи для Vacancy
+  vacancies Vacancy[]
+}
