@@ -1,13 +1,14 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
 import { VacancyService } from './vacancy.service';
 import { CreateVacancyDto } from './dto/create-vacancy.dto';
+import { JwtGuard } from 'src/guards/jwt.guard';
 
-@Controller('vacancy')
+@Controller('vacancies')
 export class VacancyController {
   constructor(private readonly vacancyService: VacancyService) {}
 
   @Post(":id")
-  create(@Param() id: string, @Body() createVacancyDto: CreateVacancyDto) {
+  create(@Param("id") id: string, @Body() createVacancyDto: CreateVacancyDto) {
     return this.vacancyService.addVacancy(+id, createVacancyDto);
   }
 
@@ -21,6 +22,7 @@ export class VacancyController {
     return this.vacancyService.findOne(+id);
   }
 
+  @UseGuards(JwtGuard)
   @Delete(':employerId/:id')
   remove(@Param("employerId") employerId: string, @Param('id') id: string) {
     return this.vacancyService.remove(+employerId, +id);

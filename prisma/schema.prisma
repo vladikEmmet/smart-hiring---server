@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  EMPLOYER
+}
+
 model User {
   id        Int   @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -16,10 +21,16 @@ model User {
   name      String?
   skills    SkillUser[]  // Множество SkillUser для связи между User и Skill
   about     String?
+  location String?
+  website   String?
+  phone String?
+  company String?
   age       Int?
   avatar    String?
   password  String
   experience Experience[]
+  role     Role     @default(USER)
+  vacancies Vacancy[]
 }
 
 model Experience {
@@ -67,33 +78,12 @@ model Vacancy {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  title     String
-  company   String
-  location  String?
-  salary    Int?
-  description String?
-
-  // Обратное поле связи в модели Employer
-  employer  Employer @relation(fields: [employerId], references: [id])
-  employerId Int
-}
-
-model Employer {
-  id        Int   @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  email     String   @unique
-  name      String?
-  about     String?
-  avatar    String?
-  password  String
-  company   String
-  location  String?
-  website   String?
-  responses Int?
-  phone     String?
-
-  // Обратное поле связи для Vacancy
-  vacancies Vacancy[]
+  title String
+  company String
+  description String
+  location String
+  salary Int
+  // Corrected the attribute to @relation and the field to fields
+  user User @relation(fields: [userId], references: [id])
+  userId Int
 }

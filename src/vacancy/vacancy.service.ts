@@ -2,15 +2,15 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateVacancyDto } from './dto/create-vacancy.dto';
 import { UpdateVacancyDto } from './dto/update-vacancy.dto';
 import { PrismaService } from 'src/prisma.service';
-import { EmployerService } from 'src/employer/employer.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class VacancyService {
-  constructor(private readonly prisma: PrismaService, private readonly employerServer: EmployerService) {}
+  constructor(private readonly prisma: PrismaService, private readonly userService: UserService) {}
   async findAll() {
     const vacancies = await this.prisma.vacancy.findMany({
       include: {
-        employer: true,
+        user: true,
       },
     });
     return vacancies;
@@ -22,7 +22,7 @@ export class VacancyService {
         id,
       },
       include: {
-        employer: true,
+        user: true,
       },
     });
     if (!vacancy) throw new NotFoundException("Vacancy not found");
@@ -30,8 +30,8 @@ export class VacancyService {
   }
 
   async remove(employerId: number, id: number) {
-    const employer = await this.employerServer.findEmployerById(employerId);
-    if (!employer) throw new BadRequestException("Employer not found or you're not employer");
+    const employer = await this.userService.getProfile(employerId);
+    if (!employer || employer.role !== "EMPLOYER") throw new BadRequestException("Employer not found or you're not employer");
     const vacancy = await this.prisma.vacancy.findUnique({
       where: {
         id,
@@ -46,11 +46,12 @@ export class VacancyService {
   }
 
   async addVacancy(id: number, vacancy: CreateVacancyDto) {
-    const employer = await this.prisma.employer.findUnique({
+    const employer = await this.prisma.user.findUnique({
       where: {
         id,
       },
     });
+    if(employer.role !== "EMPLOYER") throw new BadRequestException("You're not employer");
     if (!employer) throw new BadRequestException("Employer not found or you're not employer");
     const { title, company, description, location, salary } = vacancy;
     return this.prisma.vacancy.create({
@@ -60,7 +61,7 @@ export class VacancyService {
         description,
         location,
         salary,
-        employer: {
+        user: {
           connect: {
             id,
           },

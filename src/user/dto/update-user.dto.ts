@@ -13,17 +13,22 @@ interface Experience {
 }
 
 interface Skills {
-    id: number;
-    name: string;
-    rating: number;
+  id: number;
+  name: string;
+  rating: number;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
-    password?: string;
-    name?: string;
-    avatar?: string;
-    experience?: Experience[];
-    education?: string;
-    skills?: Skills[];
-    about: string;
+  password?: string;
+  name?: string;
+  avatar?: string;
+  experience?: Experience[];
+  education?: string;
+  skills?: Skills[];
+  about: string;
+  age: number;
+}
+
+export interface UpdateSkill {
+  level: number;
 }
